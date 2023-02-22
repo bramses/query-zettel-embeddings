@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-gpt3-summarizer",
-	"name": "GPT3 Summarizer",
-	"version": "1.0.1",
+	"id": "query-zettel-embeddings",
+	"name": "Query Zettel Embeddings Obsidian Plugin",
+	"version": "0.0.1",
 	"minAppVersion": "0.12.0",
-	"description": "Summarize Text with GPT3",
+	"description": "Query local Zettel Embeddings",
 	"author": "Bram Adams",
 	"authorUrl": "https://www.bramadams.dev/",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

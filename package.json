@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-gpt3-summarizer",
+	"name": "query-zettel-embeddings",
 	"version": "1.0.1",
-	"description": "Summarize with GPT3",
+	"description": "Query Zettel Embeddings and Insert Links",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

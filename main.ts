@@ -12,154 +12,166 @@ import {
 
 // Remember to rename these classes and interfaces!
 
-interface GPT3SummarizerSettings {
-	apiKey: string;
-	engine: string;
-	tagToggle: boolean;
-	keepOriginal: boolean;
+interface QueryEmbeddedZettelsSettings {
+	filename: string;
+	port: string;
 }
 
-const DEFAULT_SETTINGS: GPT3SummarizerSettings = {
-	apiKey: "default",
-	engine: "text-davinci-003",
-	tagToggle: true,
-	keepOriginal: true,
+const DEFAULT_SETTINGS: QueryEmbeddedZettelsSettings = {
+	filename: "default",
+	port: "text-davinci-003",
 };
 
-export default class GPT3Summarizer extends Plugin {
-	settings: GPT3SummarizerSettings;
+export default class QueryEmbeddedZettels extends Plugin {
+	settings: QueryEmbeddedZettelsSettings;
 
-	async callOpenAIAPI(
-		prompt: string,
-		engine = "text-davinci-003",
-		max_tokens = 250,
-		temperature = 0.3,
-		best_of = 3
-	) {
-		const response = await request({
-			url: `https://api.openai.com/v1/engines/${engine}/completions`,
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${this.settings.apiKey}`,
-				"Content-Type": "application/json",
-			},
-			contentType: "application/json",
-			body: JSON.stringify({
-				prompt: prompt,
-				max_tokens: max_tokens,
-				temperature: temperature,
-				best_of: best_of,
-			}),
-		});
+	// async callOpenAIAPI(
+	// 	prompt: string,
+	// 	engine = "text-davinci-003",
+	// 	max_tokens = 250,
+	// 	temperature = 0.3,
+	// 	best_of = 3
+	// ) {
+	// 	const response = await request({
+	// 		url: `https://api.openai.com/v1/engines/${engine}/completions`,
+	// 		method: "POST",
+	// 		headers: {
+	// 			Authorization: `Bearer ${this.settings.apiKey}`,
+	// 			"Content-Type": "application/json",
+	// 		},
+	// 		contentType: "application/json",
+	// 		body: JSON.stringify({
+	// 			prompt: prompt,
+	// 			max_tokens: max_tokens,
+	// 			temperature: temperature,
+	// 			best_of: best_of,
+	// 		}),
+	// 	});
 
-		const responseJSON = JSON.parse(response);
-		return responseJSON.choices[0].text;
-	}
+	// 	const responseJSON = JSON.parse(response);
+	// 	return responseJSON.choices[0].text;
+	// }
+
+	
 
 	async onload() {
 		await this.loadSettings();
-		const engine = this.settings.engine;
-
-		this.addCommand({
-			id: "summarize",
-			name: "Summarize",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				const text = editor.getSelection();
-				const summaryPrompt = `Summarize this text into one tweet.\n\nText:\n${text}\n\nSummary:\n`;
-				const summary = await this.callOpenAIAPI(summaryPrompt, engine);
-				let tags = "";
-
-				if (this.settings.tagToggle) {
-					const tagsPrompt = `Summarize this text into a comma separated list of tags.\n\nText:\n${text}\n\nTags:\n`;
-					tags = await this.callOpenAIAPI(tagsPrompt, engine);
-				}
-				const titlePrompt = `Suggest a one line title for the following text.\n\nText:\n${text}\n\nTitle:\n`;
-				const title = await this.callOpenAIAPI(titlePrompt);
-
-				editor.replaceSelection(
-					`# ${title.trim()}${
-						this.settings.tagToggle ? `\n\n## Tags:\n${tags}` : ""
-					}\n\n## Summary:\n${summary}\n\n${
-						this.settings.keepOriginal
-							? `## Original Text:\n\n${editor.getSelection()}`
-							: ""
-					}`
-				);
-			},
-		});
 
 		// add a command to summarize text and add it to frontmatter as excerpt
-		this.addCommand({
-			id: "summarize-to-frontmatter",
-			name: "Add Excerpt to Frontmatter",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				const metadataMenuPlugin =
-					this.app.plugins.plugins["metadata-menu"].api;
-				if (!metadataMenuPlugin) {
-					new Notice("Metadata Menu plugin not found");
-					return;
-				}
+		// this.addCommand({
+		// 	id: "summarize-to-frontmatter",
+		// 	name: "Add Excerpt to Frontmatter",
+		// 	editorCallback: async (editor: Editor, view: MarkdownView) => {
+		// 		const metadataMenuPlugin =
+		// 			this.app.plugins.plugins["metadata-menu"].api;
+		// 		if (!metadataMenuPlugin) {
+		// 			new Notice("Metadata Menu plugin not found");
+		// 			return;
+		// 		}
 
-				const activeFile = view.file;
+		// 		const activeFile = view.file;
 
-				if (!activeFile) {
-					new Notice("No file open");
-					return;
-				}
+		// 		if (!activeFile) {
+		// 			new Notice("No file open");
+		// 			return;
+		// 		}
 
-				const { postValues } = app.plugins.plugins["metadata-menu"].api;
+		// 		const { postValues } = app.plugins.plugins["metadata-menu"].api;
 
-				const editField = async (file: any, yamlKey: any, newValue: any) => {					
-					const fieldsPayload = [
-						{
-							name: yamlKey,
-							payload: {
-								value: newValue,
-							},
-						},
-					];
-					postValues(file, fieldsPayload);
-				};
+		// 		const editField = async (file: any, yamlKey: any, newValue: any) => {
+		// 			const fieldsPayload = [
+		// 				{
+		// 					name: yamlKey,
+		// 					payload: {
+		// 						value: newValue,
+		// 					},
+		// 				},
+		// 			];
+		// 			postValues(file, fieldsPayload);
+		// 		};
 
-				const loading = this.addStatusBarItem();
-				loading.setText("Loading...");
-				const text = editor.getSelection();
-				const summaryPrompt = `Summarize this text into one or two sentences in first person format (using "I"):.\n\nText:\n${text}\n\nSummary:\n`;
-				const summary = await this.callOpenAIAPI(summaryPrompt, engine, 100);
+		// 		const loading = this.addStatusBarItem();
+		// 		loading.setText("Loading...");
+		// 		const text = editor.getSelection();
+		// 		const summaryPrompt = `Summarize this text into one or two sentences in first person format (using "I"):.\n\nText:\n${text}\n\nSummary:\n`;
+		// 		const summary = await this.callOpenAIAPI(summaryPrompt, engine, 100);
 
-				await editField(activeFile, "excerpt", summary.trim().replace(/\n/g, " "));
-				loading.setText("");
-			},
-		});
+		// 		await editField(activeFile, "excerpt", summary.trim().replace(/\n/g, " "));
+		// 		loading.setText("");
+		// 	},
+		// });
 
 		// outline > complete sentences
 		this.addCommand({
-			id: "outline-to-complete-sentences",
-			name: "Outline to Complete Sentences",
+			id: "find-interesting-notes",
+			name: "Use Embeddings to Find Interesting Notes",
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				const text = editor.getSelection();
-				const sentencesPrompt = `Convert this bulleted outline into complete sentence English (maintain the voice and styling (use bold, links, headers and italics Markdown where appropriate)). Each top level bullet is a new paragraph/section. Sub bullets go within the same paragraph. Convert shorthand words into full words.\n\nOutline:\n${text}\n\nComplete Sentences Format:\n`;
+				// const sentencesPrompt = `Convert this bulleted outline into complete sentence English (maintain the voice and styling (use bold, links, headers and italics Markdown where appropriate)). Each top level bullet is a new paragraph/section. Sub bullets go within the same paragraph. Convert shorthand words into full words.\n\nOutline:\n${text}\n\nComplete Sentences Format:\n`;
+
 				const loading = this.addStatusBarItem();
 				loading.setText("Loading...");
-				const sentences = await this.callOpenAIAPI(
-					sentencesPrompt,
-					engine,
-					1000,
-					0.7
-				);
-				editor.replaceSelection(
-					`${
-						this.settings.keepOriginal
-							? `${editor.getSelection()}`
-							: ""
-					}\n\n${sentences}`
-				);
+
+				const res = await request({
+					url: `http://127.0.0.1:${this.settings.port}/query`,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						query: text,
+						filename: this.settings.filename,
+						obsidian_filename: view.file.path.replace(".md", "")
+					}),
+				});
+
+
+				// err
+				if (res.includes("Error")) {
+					new Notice("Error");
+					loading.setText("");
+					return;
+				}
+
+				console.log(res);
+
 				loading.setText("");
+				
+				try {
+					const json = JSON.parse(res);
+					const owl = json.owl;
+					const raven = json.raven;
+					const toucan = json.toucan;
+	
+					// take filename from full path /path/to/file.md
+					const extractFilename = (filename: string) => {
+						const parts = filename.split("/");
+						return parts[parts.length - 1].replace(".md", "");
+					}
+	
+					const fetchTitle = (content: string) => {
+						// get first h1
+						const title = content.match(/# (.*)/);
+						if (title) {
+							return title[1];
+						}
+						return "";
+					}
+	
+					const sentences = `Similar: ${fetchTitle(owl.contents)} - [[${extractFilename(owl.filename)}]]\n\nClever: ${fetchTitle(raven.contents)} - [[${extractFilename(raven.filename)}]]\n\nChaotic: ${fetchTitle(toucan.contents)} - [[${extractFilename(toucan.filename)}]]\n\n`;
+					editor.replaceSelection(
+						`${editor.getSelection()}\n\n## AI Generated Read Next\n\n${sentences}`
+					);
+					loading.setText("");
+				} catch (err) {
+					loading.setText("");
+					new Notice("Error");
+				}
 			},
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new GPT3SummarizerTab(this.app, this));
+		this.addSettingTab(new QueryEmbeddedZettelsTab(this.app, this));
 	}
 
 	onunload() {}
@@ -177,10 +189,10 @@ export default class GPT3Summarizer extends Plugin {
 	}
 }
 
-class GPT3SummarizerTab extends PluginSettingTab {
-	plugin: GPT3Summarizer;
+class QueryEmbeddedZettelsTab extends PluginSettingTab {
+	plugin: QueryEmbeddedZettels;
 
-	constructor(app: App, plugin: GPT3Summarizer) {
+	constructor(app: App, plugin: QueryEmbeddedZettels) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -193,61 +205,29 @@ class GPT3SummarizerTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
 
 		new Setting(containerEl)
-			.setName("OpenAI API Key")
-			.setDesc("API Key for OpenAI")
+			.setName("Zettel Parquet File Path")
+			.setDesc("Path to your Zettel Parquet file")
 			.addText((text) =>
 				text
-					.setPlaceholder("some-api-key")
-					.setValue(this.plugin.settings.apiKey)
+					.setPlaceholder("/path/to/your/zettel.parquet")
+					.setValue(this.plugin.settings.filename)
 					.onChange(async (value) => {
-						console.log("Secret: " + value);
-						this.plugin.settings.apiKey = value;
+						console.log("Path: " + value);
+						this.plugin.settings.filename = value;
 						await this.plugin.saveSettings();
 					})
 			);
 
-		// dropdown setting for choosing engine
 		new Setting(containerEl)
-			.setName("Engine")
-			.setDesc("Choose the engine to use for summarization")
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOption("text-davinci-003", "Davinci")
-					.addOption("text-curie-001", "Curie")
-					.addOption("text-babbage-001", "Babbage")
-					.addOption("text-ada-001", "Ada")
-					.setValue(this.plugin.settings.engine)
+			.setName("Port")
+			.setDesc("Port to run the server on")
+			.addText((text) =>
+				text
+					.setPlaceholder("5000")
+					.setValue(this.plugin.settings.port)
 					.onChange(async (value) => {
-						console.log("Engine: " + value);
-						this.plugin.settings.engine = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		// toggle for whether to add tags
-		new Setting(containerEl)
-			.setName("Add Tags")
-			.setDesc("Add tags to the summary")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.tagToggle)
-					.onChange(async (value) => {
-						console.log("Tag Toggle: " + value);
-						this.plugin.settings.tagToggle = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		// toggle for whether to keep original text
-		new Setting(containerEl)
-			.setName("Keep Original Text")
-			.setDesc("Keep the original text in the summary")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.keepOriginal)
-					.onChange(async (value) => {
-						console.log("Keep Original: " + value);
-						this.plugin.settings.keepOriginal = value;
+						console.log("Port: " + value);
+						this.plugin.settings.port = value;
 						await this.plugin.saveSettings();
 					})
 			);
